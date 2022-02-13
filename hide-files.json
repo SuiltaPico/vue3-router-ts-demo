@@ -1,0 +1,20 @@
+{
+  "profiles": [
+    {
+      "name": "Default",
+      "detail": "",
+      "description": "Default",
+      "hidden": [
+        "README.md",
+        ".editorconfig",
+        "package-lock.json",
+        ".browserslistrc",
+        ".vscode",
+        "src/shims-vue.d.ts",
+        ".eslintrc.js",
+        "babel.config.js",
+        "tsconfig.json"
+      ]
+    }
+  ]
+}
