@@ -1,7 +1,10 @@
 <template>
   <router-link
     class="container"
-    :to="{ name: 'NewsDetail', params: { post_id: news_info.post_id } }"
+    :to="{
+      name: 'NewsDetail',
+      params: { post_id: news_info.post_id },
+    }"
   >
     <div class="content">
       <img :src="news_info.author_avatar" alt="" class="author_avatar" />
@@ -15,13 +18,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+
 export default defineComponent({
   name: "NewsItem",
 });
 </script>
 
 <script lang="ts" setup>
-import { NewsData } from "./api_result";
+import { NewsData } from "../NewsData";
+
 const props = defineProps<{
   news_info: NewsData;
 }>();

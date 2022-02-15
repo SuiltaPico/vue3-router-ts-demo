@@ -16,9 +16,11 @@ export default defineComponent({
 </script>
 
 <script lang="ts" setup>
-import { watch, ref } from "vue";
+import { watch } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import { NewsData } from "../NewsData";
+
 let data = reactive({
   content: "载入中...",
   title: "正在努力为您加载新闻...",
@@ -28,26 +30,51 @@ let data = reactive({
 });
 
 let route = useRoute();
-let post_id: string = route.params.post_id as unknown as string;
-function update_news_info() {
-  axios.get("https://unidemo.dcloud.net.cn/api/news/36kr/" + post_id).then(
-    (value) => {
-      console.log(value.data);
-      data.title = value.data.title + "...";
-      data.content = (value.data.content as string)
-        .replaceAll("<a", "<span")
-        .replaceAll("</a>", "</span>");
-      data.cover = value.data.cover;
-      data.author_name = value.data.author_name;
-      data.updated_at = value.data.updated_at;
-    },
-    (reason) => {
-      data.title = "加载失败";
-      data.content = "错误原因：" + String(reason);
-    }
-  );
+let post_id: string = route.params.post_id as string;
+let news_cache: string | null | NewsData[] =
+  sessionStorage.getItem("news_cache");
+let news_cache_map: Map<string, NewsData> = new Map();
+
+// 构建 post_id -> NewsData 的 Map
+if (news_cache) {
+  news_cache = JSON.parse(news_cache as string);
+  (news_cache as NewsData[]).forEach((news_data) => {
+    news_cache_map.set(news_data.post_id, news_data);
+  });
 }
 
+/** 更新新闻信息。
+ *
+ * 尝试读取缓存，没有则立即获取。
+ */
+function update_news_info() {
+  if (!news_cache_map.has(post_id)) {
+    axios.get("https://unidemo.dcloud.net.cn/api/news/36kr/" + post_id).then(
+      (value) => {
+        use_NewsData(value.data);
+      },
+      (reason) => {
+        data.title = "加载失败";
+        data.content = "错误原因：" + String(reason);
+      }
+    );
+  } else {
+    use_NewsData(news_cache_map.get(post_id) as NewsData);
+  }
+}
+
+/**
+ * 让组件直接使用某个 NewsData
+ */
+function use_NewsData(news_data: NewsData) {
+  document.title = data.title = news_data.title + "...";
+  data.content = news_data.content as string;
+  data.cover = news_data.cover;
+  data.author_name = news_data.author_name;
+  data.updated_at = news_data.updated_at;
+}
+
+// 监听参数变化
 watch(
   () => route.params,
   (to, _) => {
@@ -55,6 +82,7 @@ watch(
   }
 );
 
+(document.querySelector("#app") as Element).scroll({ top: 0 });
 update_news_info();
 </script>
 
@@ -70,6 +98,12 @@ update_news_info();
 }
 .content :deep(p) {
   line-height: 1.7rem;
+}
+
+.content :deep(img) {
+  max-width: 100%;
+  display: block;
+  margin: auto;
 }
 .cover {
   width: 100%;
