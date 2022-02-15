@@ -1,4 +1,5 @@
-# hello-world
+#  vue3-router-ts-demo
+一个调用新闻 API 获取并显示新闻（含列出列表与显示细节）的 demo。
 
 ## Project setup
 ```
